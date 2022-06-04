@@ -1,12 +1,12 @@
-################################# CABE«ALHO ####################################
+################################# CABE√áALHO ####################################
 
 #Desenvolvido por Carlos Magno de Jesus Amora
 #Estudante de Economia da Uff
 #O codigo foi desenvolvido para obter resultados para o TCC do mesmo
 
 ################################################################################
-#Determine o espaÁo de trabalho especifico de sua maquina.
-#Mantenha em mente que o arquico excel dever· est· no espaÁo determinado 
+#Determine o espa√ßo de trabalho especifico de sua maquina.
+#Mantenha em mente que o arquico excel dever√° est√° no espa√ßo determinado 
 #Exemplo : setwd("C:/Users/")
 
 require(car)
@@ -26,7 +26,7 @@ require(broom)
 
 data <- read_xlsx('dados.xlsx')
 
-data$log_gdp <- log(data$gdp_percapita)
+data$log_gdp <- log(data$gdp)
 data$log_gcf <- log(data$gcf)
 
 
@@ -40,7 +40,7 @@ rownames(dados) <- dados$Data
 ################################################################################
 
 
-################################### DIFEREN«A ##################################
+################################### DIFEREN√áA ##################################
 
 diffdados = as.data.frame(diff(as.matrix(dados), lag = 1))
 
@@ -95,7 +95,7 @@ vif(modelo)
 ################################################################################
 
 
-################### Breusch-Godfrey test (autocorrelaÁ„o) ######################
+################### Breusch-Godfrey test (autocorrela√ß√£o) ######################
 
 bgtest(modelo, type = 'F')
 #bgtest(modelo,type = 'F',order = 2)
