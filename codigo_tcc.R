@@ -26,7 +26,7 @@ require(broom)
 
 data <- read_xlsx('dados.xlsx')
 
-data$log_gdp <- log(data$gdp)
+data$log_gdp <- log(data$gdp_percapita)
 data$log_gcf <- log(data$gcf)
 
 
@@ -119,7 +119,7 @@ coeftest(modelo, vcov. = vcovHAC.default(modelo))
 
 ################################# GRAFICOS #####################################
 
-ggplot() + geom_line(data = dataframe, aes(Data,index_human_K)) +
+ggplot() + geom_line(data = datafr, aes(Data,index_human_K)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
@@ -130,19 +130,7 @@ ggplot() + geom_line(data = dataframe, aes(Data,index_human_K)) +
         panel.border = element_blank(),
         panel.background = element_blank()) 
 
-ggplot() + geom_line(data = dataframe, aes(Data,democrat_index)) +
-  ylab('')+ 
-  scale_y_continuous(breaks= pretty_breaks())+
-  scale_x_continuous(breaks= pretty_breaks())+
-  theme_bw() +
-  theme(axis.line = element_line(colour = "black"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank()) 
-
-
-ggplot() + geom_line(data = dataframe, aes(Data,log_gcf)) +
+ggplot() + geom_line(data = datafr, aes(Data,democrat_index)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
@@ -154,7 +142,19 @@ ggplot() + geom_line(data = dataframe, aes(Data,log_gcf)) +
         panel.background = element_blank()) 
 
 
-ggplot() + geom_line(data = dataframe, aes(Data,tfp)) +
+ggplot() + geom_line(data = datafr, aes(Data,log_gcf)) +
+  ylab('')+ 
+  scale_y_continuous(breaks= pretty_breaks())+
+  scale_x_continuous(breaks= pretty_breaks())+
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank()) 
+
+
+ggplot() + geom_line(data = datafr, aes(Data,tfp)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
@@ -167,7 +167,7 @@ ggplot() + geom_line(data = dataframe, aes(Data,tfp)) +
 
 
 
-ggplot() + geom_line(data = dataframe, aes(Data,log_gdp)) +
+ggplot() + geom_line(data = datafr, aes(Data,log_gdp)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
