@@ -1,12 +1,12 @@
-################################# CABE√áALHO ####################################
+################################# CABE«ALHO ####################################
 
 #Desenvolvido por Carlos Magno de Jesus Amora
 #Estudante de Economia da Uff
 #O codigo foi desenvolvido para obter resultados para o TCC do mesmo
 
 ################################################################################
-#Determine o espa√ßo de trabalho especifico de sua maquina.
-#Mantenha em mente que o arquico excel dever√° est√° no espa√ßo determinado 
+#Determine o espaÁo de trabalho especifico de sua maquina.
+#Mantenha em mente que o arquico excel dever· est· no espaÁo determinado 
 #Exemplo : setwd("C:/Users/")
 
 require(car)
@@ -24,23 +24,26 @@ require(broom)
 
 ############################### CHAMANDO DADOS #################################
 
+
 data <- read_xlsx('dados.xlsx')
 
-data$log_gdp <- log(data$gdp)
+data$log_gdp_pc <- log(data$gdp_percap)
 data$log_gcf <- log(data$gcf)
+data$ihk <- data$index_human_K
 
 
 dados <- data
-dados$gdp = NULL
+dados$gdp_percap = NULL
 dados$gcf = NULL
+dados$index_human_K = NULL
+dados$POP = NULL
 rownames(dados) <- dados$Data
-
 
 
 ################################################################################
 
 
-################################### DIFEREN√áA ##################################
+################################### DIFEREN«A ##################################
 
 diffdados = as.data.frame(diff(as.matrix(dados), lag = 1))
 
@@ -49,39 +52,46 @@ diffdados = as.data.frame(diff(as.matrix(dados), lag = 1))
 
 ################################# UNIT ROOT TEST ###############################
 
-adf.test(dados$log_gdp)
-adf.test(dados$index_human_K)
+adf.test(dados$log_gdp_pc)# … Estacionario neste nivel
+adf.test(dados$ihk)
 adf.test(dados$democrat_index)
-adf.test(dados$log_gcf)
+adf.test(dados$log_gcf)# … Estacionario neste nivel
 adf.test(dados$tfp)
-adf.test(diffdados$index_human_K)
-adf.test(diffdados$democrat_index)
-adf.test(diffdados$tfp)
+adf.test(diffdados$ihk)# … Estacionario neste nivel
+adf.test(diffdados$democrat_index)# … Estacionario neste nivel
+adf.test(diffdados$tfp)# … Estacionario neste nivel
 
 
-pp.test(dados$log_gdp,type = 'Z_tau')
-pp.test(dados$index_human_K,type = 'Z_tau')
+pp.test(dados$log_gdp_pc,type = 'Z_tau')
+pp.test(dados$ihk,type = 'Z_tau')
 pp.test(dados$democrat_index,type = 'Z_tau')
 pp.test(dados$tfp,type = 'Z_tau')
 pp.test(dados$log_gcf,type = 'Z_tau')
-pp.test(diffdados$index_human_K,type = 'Z_tau')
-pp.test(diffdados$democrat_index,type = 'Z_tau')
-pp.test(diffdados$log_gcf,type = 'Z_tau')
-pp.test(diffdados$tfp,type = 'Z_tau')
+pp.test(diffdados$ihk,type = 'Z_tau')# … Estacionario neste nivel
+pp.test(diffdados$democrat_index,type = 'Z_tau')# … Estacionario neste nivel
+pp.test(diffdados$log_gcf,type = 'Z_tau')# … Estacionario neste nivel
+pp.test(diffdados$log_gdp_pc,type = 'Z_tau')# … Estacionario neste nivel
+pp.test(diffdados$tfp,type = 'Z_tau')# … Estacionario neste nivel
 
 
-kpss.test(dados$log_gcf)
+kpss.test(dados$log_gcf)# … Estacionario neste nivel
+kpss.test(dados$log_gdp_pc)# … Estacionario neste nivel
+
+##ApÛs Utilizarmos o Kpss Teste chegamos a conclus„o de que a variavel "log_gcf"
+## e "log_gdp_pc" s„o estacionarias em seu niveis original, j· que a hipotes 
+## alternativa (N„o estacionaria) n„o È verdadeira. 
 
 
 ################################################################################
 
 
 #################################### MODELO ####################################
-
+#Filtro para igualar tamanho das variaveis
 datafr <- subset(dados , dados$Data > 1969)
 difdata<- subset(diffdados, rownames(diffdados) > 1969)
+##
 
-modelo = lm(datafr$log_gdp ~  Lag(datafr$log_gcf,shift = 1) + difdata$tfp + difdata$index_human_K +  difdata$democrat_index )
+modelo = lm(datafr$log_gdp_pc ~  Lag(datafr$log_gcf,shift = 1) + difdata$tfp + difdata$ihk +  difdata$democrat_index )
 
 summary(modelo)
 
@@ -95,7 +105,7 @@ vif(modelo)
 ################################################################################
 
 
-################### Breusch-Godfrey test (autocorrela√ß√£o) ######################
+################### Breusch-Godfrey test (autocorrelaÁ„o) ######################
 
 bgtest(modelo, type = 'F')
 #bgtest(modelo,type = 'F',order = 2)
@@ -119,7 +129,7 @@ coeftest(modelo, vcov. = vcovHAC.default(modelo))
 
 ################################# GRAFICOS #####################################
 
-ggplot() + geom_line(data = datafr, aes(Data,index_human_K)) +
+ggplot() + geom_line(data = dados, aes(Data,ihk)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
@@ -130,19 +140,7 @@ ggplot() + geom_line(data = datafr, aes(Data,index_human_K)) +
         panel.border = element_blank(),
         panel.background = element_blank()) 
 
-ggplot() + geom_line(data = datafr, aes(Data,democrat_index)) +
-  ylab('')+ 
-  scale_y_continuous(breaks= pretty_breaks())+
-  scale_x_continuous(breaks= pretty_breaks())+
-  theme_bw() +
-  theme(axis.line = element_line(colour = "black"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank()) 
-
-
-ggplot() + geom_line(data = datafr, aes(Data,log_gcf)) +
+ggplot() + geom_line(data = dados, aes(Data,democrat_index)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
@@ -154,7 +152,19 @@ ggplot() + geom_line(data = datafr, aes(Data,log_gcf)) +
         panel.background = element_blank()) 
 
 
-ggplot() + geom_line(data = datafr, aes(Data,tfp)) +
+ggplot() + geom_line(data = dados, aes(Data,log_gcf)) +
+  ylab('')+ 
+  scale_y_continuous(breaks= pretty_breaks())+
+  scale_x_continuous(breaks= pretty_breaks())+
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank()) 
+
+
+ggplot() + geom_line(data = dados, aes(Data,tfp)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
@@ -167,7 +177,7 @@ ggplot() + geom_line(data = datafr, aes(Data,tfp)) +
 
 
 
-ggplot() + geom_line(data = datafr, aes(Data,log_gdp)) +
+ggplot() + geom_line(data = dados, aes(Data,log_gdp_pc)) +
   ylab('')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
@@ -177,3 +187,4 @@ ggplot() + geom_line(data = datafr, aes(Data,log_gdp)) +
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank()) 
+
