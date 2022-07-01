@@ -27,23 +27,20 @@ require(dynamac)
 
 ############################### CHAMANDO DADOS #################################
 
-
 data <- read_xlsx('dados.xlsx')
 
-data$log_gdp_pc <- log(data$gdp_percap)
-data$log_gcf <- log(data$gcf)
+data$log_gdp_pc <- log10(data$gdp_percap)
+data$log_gcf <- log10(data$gcf)
 data$ihk <- data$index_human_K
-
 
 dados <- data
 
 rownames(dados) <- dados$Data
 
-
 ################################################################################
 
 
-################################### DIFERENÇA ##################################
+###################################DF DIFERENÇA ##################################
 
 diffdados = as.data.frame(diff(as.matrix(dados), lag = 1))
 
@@ -75,18 +72,6 @@ aTSA::pp.test(diffdados$log_gcf,type = 'Z_tau')# É Estacionario neste nivel
 aTSA::pp.test(diffdados$log_gdp_pc,type = 'Z_tau')# É Estacionario neste nivel
 aTSA::pp.test(diffdados$tfp,type = 'Z_tau')# É Estacionario neste nivel
 
-aTSA::kpss.test(dados$log_gdp_pc)# É Estacionario neste nivel
-aTSA::kpss.test(dados$ihk)# É Estacionario neste nivel
-aTSA::kpss.test(dados$democrat_index)# É Estacionario neste nivel
-aTSA::kpss.test(dados$log_gcf)# É Estacionario neste nivel
-aTSA::kpss.test(dados$tfp)# É Estacionario neste nivel
-aTSA::kpss.test(diffdados$ihk)# É Estacionario neste nivel
-aTSA::kpss.test(diffdados$democrat_index)# É Estacionario neste nivel
-aTSA::kpss.test(diffdados$tfp)# É Estacionario neste nivel
-aTSA::kpss.test(diffdados$log_gdp_pc)# É Estacionario neste nivel
-aTSA::kpss.test(diffdados$log_gcf)# É Estacionario neste nivel
-
-
 ################################################################################
 
 
@@ -101,13 +86,8 @@ modelo = lm(difdata$log_gdp_pc ~  difdata$log_gcf + difdata$tfp +
 
 summary(modelo)
 
+##########################NORMALIDADE RESIDOS##############################
 
-################################################################################
-
-##############PLOT DO MODELO####################
-plot(modelo)
-#Indica que as variaveis seguem um parametro relativamente linear
-#Indica que os residos são normais
 shapiro.test(modelo$residuals) ## 0.76 no p-valor logo temos normalidade nos residos do modelo
 ####################################
 
@@ -115,7 +95,7 @@ shapiro.test(modelo$residuals) ## 0.76 no p-valor logo temos normalidade nos res
 
 vif(modelo)
 
-#################################################
+######################MEDIA RESIDOS#####################################
 mean(modelo$residuals)###8.115e-19 logo é proximo de zero.
 
 ############################ Correlograma ##################################
@@ -126,16 +106,9 @@ c$index_human_K<-NULL
 c$gcf<-NULL
 c$gdp_percap<-NULL
 cor(c,use = "complete.obs")
-acf(difdata$democrat_index)
-acf(difdata$index_human_K)
-acf(difdata$tfp)
-acf(difdata$log_gdp_pc)
-acf(difdata$log_gcf)
 
-acf(c,na.action = na.pass)
 
 ################################################################################
-
 
 ################### Breusch-Godfrey test (autocorrelação) ######################
 
@@ -144,17 +117,9 @@ bgtest(modelo, type = 'F')
 
 ################################################################################
 
-
 ######################### TESTE DE HETEROCEDASTICIDADE #########################
 
 bptest(modelo)
-
-################################################################################
-
-
-######################### CONSERTANDO MODELO COM HC ###########################
-
-coeftest(modelo, vcov. = vcovHC.default(modelo,type = "HC1"))
 
 ################################################################################
 
@@ -162,6 +127,38 @@ coeftest(modelo, vcov. = vcovHC.default(modelo,type = "HC1"))
 
 harvtest(modelo)
 
+######################### CONSERTANDO MODELO COM HC ###########################
+
+coeftest(modelo, vcov. = vcovHC.default(modelo,type = "HC1"))
+
+#####################MODELO 2(AMOSTRA DE TEMPO!=)#################################################
+
+datafr2 <- subset(dados , dados$Data > 1985)
+difdata2<- subset(diffdados, rownames(diffdados) > 1985)
+
+modelo2 = lm(difdata2$log_gdp_pc ~  difdata2$log_gcf + difdata2$tfp +
+              difdata2$ihk +  difdata2$democrat_index )
+
+summary(modelo2)
+
+c2 <- difdata2
+c2$Data<- NULL
+c2$index_human_K<-NULL
+c2$gcf<-NULL
+c2$gdp_percap<-NULL
+cor(c2,use = "complete.obs")
+
+shapiro.test(modelo2$residuals)
+
+vif(modelo2)
+
+mean(modelo2$residuals)
+
+harvtest(modelo2)
+
+bgtest(modelo2, type = 'F')
+
+bptest(modelo2)
 
 ################################# GRAFICOS #####################################
 
@@ -188,8 +185,8 @@ ggplot() + geom_line(data = dados, aes(Data,democrat_index),size=2) +
         panel.background = element_blank()) 
 
 
-ggplot() + geom_line(data = dados, aes(Data,gcf),size=2) +
-  ylab(' Formação Bruta de capita')+ 
+ggplot() + geom_line(data = dados, aes(Data,log_gcf),size=2) +
+  ylab('Log Formação Bruta de capita')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
   theme_bw() + xlab("ANO") +
@@ -211,73 +208,13 @@ ggplot() + geom_line(data = dados, aes(Data,tfp),size=2) +
         panel.border = element_blank(),
         panel.background = element_blank()) 
 
-ggplot() + geom_line(data = dados, aes(Data,gdp_percap),size=2) +
-  ylab('PIB per Capita')+ 
+ggplot() + geom_line(data = dados, aes(Data,log_gdp_pc),size=2) +
+  ylab('Log PIB per Capita')+ 
   scale_y_continuous(breaks= pretty_breaks())+
   scale_x_continuous(breaks= pretty_breaks())+
   theme_bw() + xlab("ANO") +
   theme(axis.line = element_line(colour = "black"),text = element_text(size=20),
         panel.grid.major = element_line(colour="black"),
         panel.grid.minor = element_line(colour="black"),
-        panel.border = element_blank(),
-        panel.background = element_blank()) 
-
-#####################GRAFICOS DAS PRIMEIRAS DIFERENÇAS#####################
-
-ggplot() + geom_line(data = difdata, aes(datafr$Data,ihk),size=2) +
-  ylab('Primeira Diferença de IHK')+ 
-  scale_y_continuous(breaks= pretty_breaks())+
-  scale_x_continuous(breaks= pretty_breaks())+
-  theme_bw() + xlab("ANO") + 
-  theme(axis.line = element_line(colour = "black"),text = element_text(size=20),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank()) 
-
-ggplot() + geom_line(data = difdata, aes(datafr$Data,democrat_index),size=2) +
-  ylab('Primeira diferença índice democrat')+ 
-  scale_y_continuous(breaks= pretty_breaks())+
-  scale_x_continuous(breaks= pretty_breaks())+
-  theme_bw() + xlab("ANO") +
-  theme(axis.line = element_line(colour = "black"),text = element_text(size=20),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank()) 
-
-
-ggplot() + geom_line(data = difdata, aes(datafr$Data,log_gcf),size=2) +
-  ylab('Primeira Diferença de GCF')+ 
-  scale_y_continuous(breaks= pretty_breaks())+
-  scale_x_continuous(breaks= pretty_breaks())+
-  theme_bw() + xlab("ANO") +
-  theme(axis.line = element_line(colour = "black"),text = element_text(size=20),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank()) 
-
-
-ggplot() + geom_line(data = difdata, aes(datafr$Data,tfp),size=2) +
-  ylab('Primeira Diferença de TFP')+ 
-  scale_y_continuous(breaks= pretty_breaks())+
-  scale_x_continuous(breaks= pretty_breaks())+
-  theme_bw() + xlab("ANO") +
-  theme(axis.line = element_line(colour = "black"),text = element_text(size=20),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank()) 
-
-
-ggplot() + geom_line(data = difdata, aes(datafr$Data,log_gdp_pc),size=2) +
-  ylab('Primeira diferença do PIB per Capita')+ 
-  scale_y_continuous(breaks= pretty_breaks())+
-  scale_x_continuous(breaks= pretty_breaks())+
-  theme_bw() + xlab("ANO") +
-  theme(axis.line = element_line(colour = "black"),text = element_text(size=20),
-        #panel.grid.major = element_blank(),
-        #panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank()) 
