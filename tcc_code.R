@@ -29,8 +29,8 @@ require(dynamac)
 
 data <- read_xlsx('dados.xlsx')
 
-data$log_gdp_pc <- log10(data$gdp_percap)
-data$log_gcf <- log10(data$gcf)
+data$log_gdp_pc <- log(data$gdp_percap)
+data$log_gcf <- log(data$gcf)
 data$ihk <- data$index_human_K
 
 dados <- data
@@ -130,35 +130,6 @@ harvtest(modelo)
 ######################### CONSERTANDO MODELO COM HC ###########################
 
 coeftest(modelo, vcov. = vcovHC.default(modelo,type = "HC1"))
-
-#####################MODELO 2(AMOSTRA DE TEMPO!=)#################################################
-
-datafr2 <- subset(dados , dados$Data > 1985)
-difdata2<- subset(diffdados, rownames(diffdados) > 1985)
-
-modelo2 = lm(difdata2$log_gdp_pc ~  difdata2$log_gcf + difdata2$tfp +
-              difdata2$ihk +  difdata2$democrat_index )
-
-summary(modelo2)
-
-c2 <- difdata2
-c2$Data<- NULL
-c2$index_human_K<-NULL
-c2$gcf<-NULL
-c2$gdp_percap<-NULL
-cor(c2,use = "complete.obs")
-
-shapiro.test(modelo2$residuals)
-
-vif(modelo2)
-
-mean(modelo2$residuals)
-
-harvtest(modelo2)
-
-bgtest(modelo2, type = 'F')
-
-bptest(modelo2)
 
 ################################# GRAFICOS #####################################
 
